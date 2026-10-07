@@ -12,8 +12,8 @@ de tipos, componentes, datos y utilidades.
 
 ## 1. Módulo Patrón (El Plano)
 
-Idéntico en espíritu al de gastos-tracking: cada feature se autoabastece
-de tipos, componentes, datos y utilidades.
+Cada feature se autoabastece de tipos, componentes, datos, utilidades
+y documentación.
 
 ```text
 src/features/{feature}/
@@ -25,6 +25,8 @@ src/features/{feature}/
 │   ├── {component}.tsx
 │   ├── {component}.test.tsx
 │   └── {subcomponent}.tsx
+├── docs/
+│   └── {topic}.md              # Spec y notas de desarrollo
 └── utils/
     ├── index.ts
     ├── {util}.ts
@@ -66,6 +68,7 @@ esos entry points.
 | Vive en... | Qué contiene | Por qué |
 | :--- | :--- | :--- |
 | `src/features/{feature}/` | Tipos, componentes, datos, utilidades de negocio | Si tiene nombre de negocio, va acá |
+| `src/features/{feature}/docs/` | Spec y notas de desarrollo de la feature | El doc vive junto al código que describe (Decisión I) |
 | `src/ui/` | Componentes genéricos sin dominio | Reusables entre features |
 | `src/lib/` | `cn()` y utilidades puras globales | Infraestructura. Sin dominio, sin estado |
 
@@ -158,6 +161,16 @@ otras features:
 - `@/features/{feature}/{feature}-types` — diccionario de tipos
 - `@/features/{feature}/utils` — `utils/index.ts`
 
+### Decisión I: Documentación colocada
+Los docs que describen una feature viven dentro de la feature:
+`src/features/{feature}/docs/{topic}.md` (kebab-case). Los docs globales
+del proyecto viven en `context/`. No hay `docs/` en la raíz.
+
+**Por qué:** colocation — el doc viaja con el código que describe, y la
+sesión de trabajo (o el agente) que abre la feature encuentra el spec sin
+buscar. Al migrar la feature al repo destino, su doc puede viajar con
+ella. Un `docs/` raíz se desincroniza del código.
+
 ---
 
 ## 3. Cheatsheet de Decisiones Rápidas
@@ -169,6 +182,7 @@ otras features:
 | Utilidad de interpolación / cámara | `features/{f}/utils/` | `kebab-case.ts` |
 | Tipo de dominio (Keyframe, Play) | `{feature}-types.ts` | `PascalCase` |
 | Jugada de prueba | `scene/data/play-mock.ts` | `kebab-case.ts` |
+| Doc de la feature | `features/{f}/docs/` | `kebab-case.md` |
 | Test | Al lado del archivo | `{nombre}.test.{ts\|tsx}` |
 | Valor leído por frame | Dentro de `useFrame` con `getState()` | — |
 
@@ -185,3 +199,4 @@ otras features:
 | Módulos three/react dentro de `scene-types.ts` o utils puros | Rompe la portabilidad al repo destino | Tipos primitivos, lógica sin imports (Decisión C) |
 | Importar internals de otra feature (`components/`, `data/`) | Acoplamiento oculto | Consumir entry points oficiales (Decisión H); composición en `App.tsx` |
 | Carpeta `__tests__/` o mocks de canvas | Rompe colocation / testea el mock | Tests de utils + verificación manual en browser (Decisión F) |
+| `docs/` en la raíz con specs por feature | Se desincroniza del código que describe | Colocar en `features/{f}/docs/` (Decisión I) |
