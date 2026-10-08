@@ -77,6 +77,8 @@
 **Cuando** se presiona espacio con la jugada en cualquier estado
 **Entonces** alterna entre reproducir y pausar, y la página no scrollea — trigger temporal hasta que timeline-ui lo reemplace
 
+> **Superseded por UC-C3 de timeline-ui** (`src/features/timeline-ui/docs/03-use-cases.md`): el trigger de espacio vive ahora en timeline-ui. UC-01/02/03 siguen vigentes — su superficie "espacio" se ejecuta ahora vía la feature.
+
 ### UC-G4: Delta clampeado al volver de background (gap 4)
 **Dado** la reproducción corriendo a mitad de jugada con la pestaña en background varios segundos (rAF pausado)
 **Cuando** se vuelve a la pestaña
