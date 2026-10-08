@@ -2,16 +2,19 @@
 import { fileURLToPath } from 'node:url'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   test: {
     environment: 'node',
+    globals: true,
   },
   plugins: [
     react(),
-    babel({ presets: [reactCompilerPreset()] })
+    babel({ presets: [reactCompilerPreset()] }),
+    tailwindcss(),
   ],
   resolve: {
     alias: {
