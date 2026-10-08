@@ -42,13 +42,17 @@ Use cases (guion) + app corriendo → ejecutar UC por UC en browser → reporte 
 
 1. **Levantar servidores** (si no están corriendo)
    - Usar la versión de Node definida en `.nvmrc` (si vitest falla con `styleText` de `node:util`, el Node es viejo)
-   - `pnpm dev` en una terminal (background)
+   - `bash` en modo servicio: `name` + `ready` (log `Local:` / puerto), SIN `async`/`timeout` — esa mezcla el harness la rechaza
+   - Si el readiness da timeout pero el log ya muestra `Local:` / `ready in Nms`, verificar con `curl` antes de reintentar: vite ganó la carrera al check
    - Verificar que responde
    - NO limitar el output con algo como `head -10`
 
 2. **Abrir el browser**
+   - Un solo tab persistente para TODA la verificación: `browser.open({ name: 'e2e-<feature>', url, viewport, headed: true, persist: true })` y después reusar `browser.tab(name)` — no abrir/cerrar por UC
+   - `headed: true` abre una ventana **visible** que el usuario puede mirar mientras corre (equivalente al browser integrado de VS Code); headless solo si el usuario prefiere no verla
    - Navegar a la URL de entrada (ej: `http://localhost:5173/`)
-   - Setear viewport desktop (ej: 1440x900) — el default puede ser angosto y deformar la UI
+   - Setear viewport desktop (ej: 1440x900) — el default puede ser estrecho y deformar
+   - Instrumentar una sola vez con `addInitScript` (store global, samplers con buffer, trampas de eventos) — las celdas siguientes no repiten el script
    - Si post devuelve errores o queda "colgado" en un spinner, recargar la página y esperar que cargue.
    - Si vuelve a pasar, revisar la consola del browser y el output de la terminal.
    - Si sigue pasando, pedir al usuario que intente levantarlo por su cuenta (la skill no puede fixearlo)
@@ -62,7 +66,9 @@ Use cases (guion) + app corriendo → ejecutar UC por UC en browser → reporte 
 
 4. **Ejecutar cada UC literalmente**
    - El "Dado/Cuando/Entonces" mapea 1:1 a acciones de browser: Dado = setup, Cuando = acción (click/type/drag), Entonces = verificación (texto visible, estado del DOM, persistencia)
+   - Antes de ejecutar, narrar el UC en 1 línea (ej: "UC-02: pausa a mitad — presiono espacio y mido `t` del store cada 33 ms"): el usuario sigue el guion UC-01 → UC-02 como leyendo el use-cases
    - Un UC a la vez. Si un UC falla, anotarlo y continuar (el fallo puede ser causa o consecuencia de otro)
+   - Presupuesto guía: ~3-6 tool calls por UC. Si un UC lo supera, nombrar la causa antes de seguir (señal de UC mal mapeado o entorno que pelea) — nunca escalar en silencio
 
 5. **Registrar por UC**
    - ✅ cumple (con evidencia: qué se vio)
@@ -102,6 +108,16 @@ Estado: [X/Y UCs verificados]
 - Bugs cosméticos/lógicos → el usuario aprueba fixear en esta sesión
 - Bugs de modelo → el usuario decide: fix directo o nueva narrativa (pipeline)
 - Ningún bug → feature verificada, listo para commitear
+
+## Addendum: presupuesto de tokens (conducir el browser de omp)
+
+El browser se maneja por celdas JS: cada tool call vuelca su resultado al transcript y ese transcript se re-envía en cada turno — el costo escala con cada paso chiquito. Disciplina:
+
+- **Celda atómica por UC.** Dado + Cuando + Entonces + evidencia en UNA celda JS. Devuelve un resumen numérico (≤ ~10 líneas), nunca arrays crudos de sampler ni dumps de DOM/HTML. El detalle va al checklist como números (rate medido, delta, tolerancia).
+- **Calcular dentro de la página.** El sampler acumula en `window.*`; la celda devuelve solo métricas (máximo gap, rate sobre la ventana, `t === duration`). Si hace falta la serie cruda para revisarla, a un archivo — no al chat.
+- **Screenshot racionado.** La evidencia primaria es el estado del store/DOM (números). Screenshot solo para fidelidad visual: 1-2 por UC; `silent: true` si no hay que mostrarlo.
+- **Sin reintentos idénticos.** Una llamada que falla por schema/argumentos se corrige y reintenta 1 vez; al segundo fallo, cambiar de enfoque o reportar el bloqueo. Un loop de reintentos quema turnos sin avanzar (visto en E2E real: 13 llamadas idénticas seguidas).
+- **Recargar solo cuando el UC lo pide** (persistencia, ventanas pre-monte, instrumento que congeló) — cada reload re-valida y re-instrumenta.
 
 ## Addendum: estado conducido por frame (canvas, rAF, 3D)
 
@@ -149,6 +165,9 @@ Aplica cuando la feature tiene estado que avanza fuera del control de React (rAF
 - Reportar una simulación de entorno como si fuera el escenario literal del UC (registrar la limitación en el checklist)
 - Verificar con datos de prueba que el usuario no sabe que fueron creados/modificados (avisar siempre qué datos se tocan)
 - Cerrar la sesión de verificación sin el PAUSE POINT de clasificación de bugs
+- Volcar JSON crudo de samplers/DOM al chat (ese transcript se re-envía en cada turno: el costo escala con cada paso) — métricas calculadas dentro de la página
+- Reintentar idéntico una llamada que falló por schema/argumentos (corregir 1 vez, luego cambiar de enfoque o reportar el bloqueo)
+- Abrir un tab nuevo por UC o re-instrumentar en cada celda lo que `addInitScript` ya dejó instalado
 
 ## Verification
 
@@ -159,6 +178,8 @@ Aplica cuando la feature tiene estado que avanza fuera del control de React (rAF
 - [ ] Bugs clasificados: cosmético / lógico / de modelo
 - [ ] PAUSE POINT de clasificación ejecutado con el usuario
 - [ ] Checklist actualizado con sección "Verificación E2E"
-- [ ] Se avisó al usuario qué datos de prueba se crearon/modificaron/eliminaron
+- [ ] Se avisó al usuario qué datos de prueba se crearon/modificados/eliminados
+- [ ] Un solo tab persistente (`browser.open` con `persist: true`, `headed`) reutilizado en toda la sesión
+- [ ] Evidencia en números (resumen por UC en el chat), sin dumps crudos de samplers/DOM en el transcript
 - [ ] (estado por frame) Sistema quiescente antes de cada yield; setup con asserts de estado
 - [ ] (estado por frame) Magnitudes verificadas con números y tolerancia; condiciones irreproducibles registradas como limitación
