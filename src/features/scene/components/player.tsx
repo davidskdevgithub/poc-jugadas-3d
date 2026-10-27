@@ -1,5 +1,8 @@
 import { Billboard, Text } from '@react-three/drei'
-import type { TeamId } from '../scene-types'
+import { useCameraStore } from '@/features/camera/camera-store'
+import { defaultFpvPlayerId } from '@/features/camera/utils'
+import type { PlayerId, TeamId } from '../scene-types'
+import { playMock } from '../data/play-mock'
 
 /**
  * Jugadora: cilindro bajo de altura fija (representación simple, la
@@ -9,6 +12,12 @@ import type { TeamId } from '../scene-types'
  *
  * El número vive encima del cilindro, billboardeado a la cámara para ser
  * legible desde cualquier ángulo, incluida la cenital (UC-E4).
+ *
+ * Click sobre la jugadora la selecciona en el store de camera (UC-G1). En
+ * modo 'jugadora' la dueña del FPV se oculta entera (cilindro + número,
+ * UC-G3/UC-E5): la seleccionada o, sin selección, la arquera default
+ * (defaultFpvPlayerId — misma regla que getFpvPose); re-render React solo
+ * al cambiar modo o selección — nunca por frame (Decisión D).
  */
 
 const PLAYER_RADIUS = 0.5
@@ -27,13 +36,27 @@ const NUMBER_COLORS: Record<TeamId, string> = {
 }
 
 type PlayerProps = {
+  id: PlayerId
   team: TeamId
   number: number
 }
 
-export function Player({ team, number }: PlayerProps) {
+export function Player({ id, team, number }: PlayerProps) {
+  const viewMode = useCameraStore((s) => s.viewMode)
+  const selectedPlayerId = useCameraStore((s) => s.selectedPlayerId)
+  const setSelectedPlayerId = useCameraStore((s) => s.setSelectedPlayerId)
+  const fpvOwner = selectedPlayerId ?? defaultFpvPlayerId(playMock.players)
+  const isSelf = fpvOwner === id
+  const hidden = viewMode === 'jugadora' && isSelf
+
   return (
-    <group>
+    <group
+      visible={!hidden}
+      onClick={(e) => {
+        e.stopPropagation()
+        setSelectedPlayerId(id)
+      }}
+    >
       <mesh position={[0, PLAYER_HEIGHT / 2, 0]}>
         <cylinderGeometry args={[PLAYER_RADIUS, PLAYER_RADIUS, PLAYER_HEIGHT, 24]} />
         <meshStandardMaterial color={TEAM_COLORS[team]} />

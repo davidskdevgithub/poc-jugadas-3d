@@ -55,7 +55,7 @@ export function Scene() {
             playerRefs.current[i] = el
           }}
         >
-          <Player team={identity.team} number={identity.number} />
+          <Player id={identity.id} team={identity.team} number={identity.number} />
         </group>
       ))}
 
