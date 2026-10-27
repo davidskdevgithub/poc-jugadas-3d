@@ -101,3 +101,4 @@
 **Dado** la app cargada sin ninguna interacción
 **Cuando** se observa la pantalla
 **Entonces** la pose de cámara por defecto (prop camera del Canvas en App.tsx) encuadra la cancha completa en vista tipo oblicua — verificable sin configurar nada, y reemplazable por camera/ sin tocar scene
+**Superseded:** reemplazado por UC-01 de camera — el encuadre por defecto pasa a ser de la feature camera (cámara libre), la prop `camera` de App.tsx desaparece
