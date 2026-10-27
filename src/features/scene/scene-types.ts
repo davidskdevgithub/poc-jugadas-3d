@@ -62,3 +62,7 @@ export type PositionsAtTime = {
   players: Record<PlayerId, Position2D>
   ball: BallPosition
 }
+
+/** Dimensiones de la cancha de fútbol 8 en metros: 50 a lo largo (x), 30 a lo ancho (z). */
+export const PITCH_LENGTH = 50
+export const PITCH_WIDTH = 30

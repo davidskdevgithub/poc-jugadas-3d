@@ -8,8 +8,8 @@
  * gap 3 del review de scene.
  */
 
-const LENGTH = 50 // eje x (metros)
-const WIDTH = 30 // eje z (metros)
+import { PITCH_LENGTH, PITCH_WIDTH } from '../scene-types'
+
 const LINE_WIDTH = 0.25
 const CIRCLE_RADIUS = 6
 const AREA_DEPTH = 12
@@ -30,33 +30,33 @@ type Segment = {
 
 const LINES: Segment[] = [
   // perímetro
-  { x: 0, z: -WIDTH / 2, width: LENGTH, depth: LINE_WIDTH },
-  { x: 0, z: WIDTH / 2, width: LENGTH, depth: LINE_WIDTH },
-  { x: -LENGTH / 2, z: 0, width: LINE_WIDTH, depth: WIDTH },
-  { x: LENGTH / 2, z: 0, width: LINE_WIDTH, depth: WIDTH },
+  { x: 0, z: -PITCH_WIDTH / 2, width: PITCH_LENGTH, depth: LINE_WIDTH },
+  { x: 0, z: PITCH_WIDTH / 2, width: PITCH_LENGTH, depth: LINE_WIDTH },
+  { x: -PITCH_LENGTH / 2, z: 0, width: LINE_WIDTH, depth: PITCH_WIDTH },
+  { x: PITCH_LENGTH / 2, z: 0, width: LINE_WIDTH, depth: PITCH_WIDTH },
   // línea media
-  { x: 0, z: 0, width: LINE_WIDTH, depth: WIDTH },
+  { x: 0, z: 0, width: LINE_WIDTH, depth: PITCH_WIDTH },
   // área izquierda: frente + laterales (el fondo es la línea de arco)
-  { x: -LENGTH / 2 + AREA_DEPTH, z: 0, width: LINE_WIDTH, depth: AREA_WIDTH },
-  { x: -LENGTH / 2 + AREA_DEPTH / 2, z: -AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
-  { x: -LENGTH / 2 + AREA_DEPTH / 2, z: AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
+  { x: -PITCH_LENGTH / 2 + AREA_DEPTH, z: 0, width: LINE_WIDTH, depth: AREA_WIDTH },
+  { x: -PITCH_LENGTH / 2 + AREA_DEPTH / 2, z: -AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
+  { x: -PITCH_LENGTH / 2 + AREA_DEPTH / 2, z: AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
   // área derecha
-  { x: LENGTH / 2 - AREA_DEPTH, z: 0, width: LINE_WIDTH, depth: AREA_WIDTH },
-  { x: LENGTH / 2 - AREA_DEPTH / 2, z: -AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
-  { x: LENGTH / 2 - AREA_DEPTH / 2, z: AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
+  { x: PITCH_LENGTH / 2 - AREA_DEPTH, z: 0, width: LINE_WIDTH, depth: AREA_WIDTH },
+  { x: PITCH_LENGTH / 2 - AREA_DEPTH / 2, z: -AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
+  { x: PITCH_LENGTH / 2 - AREA_DEPTH / 2, z: AREA_WIDTH / 2, width: AREA_DEPTH, depth: LINE_WIDTH },
 ]
 
 const SPOTS = [
   { x: 0, z: 0 }, // punto central
-  { x: -(LENGTH / 2 - PENALTY_SPOT_DIST), z: 0 }, // punto penal izquierdo
-  { x: LENGTH / 2 - PENALTY_SPOT_DIST, z: 0 }, // punto penal derecho
+  { x: -(PITCH_LENGTH / 2 - PENALTY_SPOT_DIST), z: 0 }, // punto penal izquierdo
+  { x: PITCH_LENGTH / 2 - PENALTY_SPOT_DIST, z: 0 }, // punto penal derecho
 ]
 
 export function Field() {
   return (
     <group>
       <mesh rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[LENGTH, WIDTH]} />
+        <planeGeometry args={[PITCH_LENGTH, PITCH_WIDTH]} />
         <meshStandardMaterial color={PITCH_COLOR} />
       </mesh>
 
